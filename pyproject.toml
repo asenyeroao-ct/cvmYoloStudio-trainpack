@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ul_bridge"
+version = "0.1.0"
+description = "YOLO Studio component that calls Ultralytics"
+readme = "README.md"
+license = { text = "AGPL-3.0-or-later" }
+requires-python = ">=3.10"
+dependencies = [
+    "ultralytics>=8.4,<8.5",
+    "torch>=2.0",
+    "numpy>=1.24",
+    "opencv-python-headless>=4.8",
+]
+
+[tool.setuptools]
+packages = ["ul_bridge"]
