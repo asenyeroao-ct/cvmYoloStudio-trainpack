@@ -78,7 +78,32 @@ flowchart LR
 
 ## 截圖
 
-> 新版介面的截圖整理中。
+<table>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="docs/screenshots/annotate.webp" width="100%" alt="標註畫面" /><br />
+      <sub><b>標註</b>：全螢幕編輯器、類別與標籤清單</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/quality.webp" width="100%" alt="品質檢查" /><br />
+      <sub><b>品質檢查</b>：依可疑程度列出漏標、多標與框不準</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/monitor.webp" width="100%" alt="訓練監控" /><br />
+      <sub><b>訓練</b>：即時 mAP / loss 曲線</sub>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="docs/screenshots/environment.webp" width="100%" alt="設定 → 執行環境" /><br />
+      <sub><b>執行環境</b>：在這裡一鍵安裝訓練套件與這個元件</sub>
+    </td>
+  </tr>
+</table>
+
+<sub>截圖使用示範專案（Ultralytics 範例圖片與 coco8 資料集）。</sub>
 
 ## 下載
 
