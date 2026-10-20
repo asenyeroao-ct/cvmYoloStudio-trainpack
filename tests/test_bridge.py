@@ -162,6 +162,18 @@ class EncodingTest(unittest.TestCase):
         big = np.zeros(1000)
         self.assertEqual(self.b.enc(big, False, ul_bridge._EVENT_SMALL), {"$shape": [1000], "dtype": "float64"})
 
+    def test_arrays(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as d:
+            out = str(Path(d) / "a.npz")
+            r = ul_bridge._arrays({"w": np.ones((2, 3), np.float16), "n": np.array(5)}, out)
+            self.assertEqual(r, [["w", [2, 3], "float16"], ["n", [], "int64"]])
+            with np.load(out) as z:
+                self.assertEqual(z["w"].shape, (2, 3))
+        with self.assertRaises(ul_bridge.BridgeError):
+            ul_bridge._arrays([1, 2], None)
+
     def test_drop_ids(self) -> None:
         value = {"boxes": {"n": 2, "xyxyn": [0, 0, 1, 1, 0, 0, 0.5, 0.5], "conf": [0.9, 0.8], "cls": [0, 1],
                            "id": [7, 8]}}
@@ -194,6 +206,33 @@ class UltralyticsTest(unittest.TestCase):
             r = s.ask({"id": 3, "op": "ckpt_read", "path": model})
             self.assertTrue(r["ok"], r)
             self.assertIn("names", r["result"])
+        finally:
+            s.close()
+
+    def test_state_dict_arrays(self) -> None:
+        import tempfile
+
+        s = Serve()
+        try:
+            with tempfile.TemporaryDirectory() as d:
+                out = str(Path(d) / "sd.npz")
+                r = s.ask({"id": 1, "op": "load", "kind": "YOLO", "model": "yolov8n.yaml"})
+                self.assertTrue(r["ok"], r)
+                h = r["result"]["handle"]
+                r = s.ask({"id": 2, "op": "call", "handle": h, "method": "model.state_dict", "ret": "arrays",
+                           "out": out})
+                self.assertTrue(r["ok"], r)
+                keys = {k: shape for k, shape, _ in r["result"]}
+                self.assertEqual(keys["model.0.conv.weight"], [16, 3, 3, 3])
+                with np.load(out) as z:
+                    arrays = {k: z[k] for k in z.files}
+                arrays["model.0.bn.bias"] = np.full(16, 0.25, np.float32)
+                np.savez(out, **arrays)
+                r = s.ask({"id": 3, "op": "call", "handle": h, "method": "model.load_state_dict",
+                           "args": [{"$npz": out}], "kwargs": {"strict": True}})
+                self.assertTrue(r["ok"], r)
+                r = s.ask({"id": 4, "op": "get", "handle": h, "attr": "model.model.0.bn.bias", "ret": "value"})
+                self.assertAlmostEqual(r["result"][3], 0.25)
         finally:
             s.close()
 

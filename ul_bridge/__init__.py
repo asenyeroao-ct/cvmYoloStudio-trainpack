@@ -27,7 +27,11 @@ Ultralytics prints goes to stderr. Each request carries an "id"; replies use the
 Operations: env, setup, load, call, get, free, stream, feed, drop, cancel, memory, ckpt_read,
 ckpt_write, reorder_head, exit. Values that are not plain JSON use one-key tagged objects:
 {"$h": handle}, {"$nd": {"dtype", "shape", "data"(base64) | "value"}}, {"$rle": {"shape", "counts"}},
-{"$dict": [[key, value], ...]}, {"$tuple": [...]}.
+{"$dict": [[key, value], ...]}, {"$tuple": [...]}; in requests also {"$npz": path}, a dict of tensors read
+from a .npz file.
+
+"call" and "get" with "ret": "arrays" take a mapping of tensors / arrays (for example a state_dict) and
+return [[key, shape, dtype], ...]; with "out" the arrays are also written to that .npz file.
 """
 from __future__ import annotations
 
@@ -43,8 +47,8 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-PROTOCOL_VERSION = 1
-__version__ = "0.1.0"
+PROTOCOL_VERSION = 2
+__version__ = "0.2.0"
 
 # Ultralytics classes that "load" can create: kind -> (module, attribute)
 _KINDS = {
@@ -121,6 +125,33 @@ def _nd_decode(obj: dict):
         a = np.frombuffer(base64.b64decode(obj["data"]), dtype=dtype)
         return a.reshape([int(v) for v in obj["shape"]]).copy()
     return np.asarray(obj["value"], dtype=dtype)
+
+
+def _npz_tensors(path: str) -> dict:
+    """.npz file -> {key: torch.Tensor}."""
+    import torch
+
+    np = _np()
+    with np.load(path, allow_pickle=False) as z:
+        return {k: torch.from_numpy(np.array(z[k])) for k in z.files}
+
+
+def _arrays(value, out: str | None) -> list:
+    """Mapping of tensors / arrays -> [[key, shape, dtype], ...]; with out, also saved as .npz."""
+    np = _np()
+    if not hasattr(value, "items"):
+        raise BridgeError("not_a_mapping", type(value).__name__)
+    arrays = {}
+    for k, v in value.items():
+        if _is_tensor(v):
+            v = v.detach().cpu()
+            if str(v.dtype) == "torch.bfloat16":
+                v = v.float()
+            v = v.numpy()
+        arrays[str(k)] = np.asarray(v)
+    if out:
+        np.savez(out, **arrays)
+    return [[k, list(a.shape), str(a.dtype)] for k, a in arrays.items()]
 
 
 # ---------------------------------------------------------------------- the bridge
@@ -205,6 +236,8 @@ class Bridge:
                     return self.obj(v)
                 if k == "$nd":
                     return _nd_decode(v)
+                if k == "$npz":
+                    return _npz_tensors(v)
                 if k == "$rle":
                     return rle_decode(v)
                 if k == "$dict":
@@ -407,12 +440,16 @@ class Bridge:
             return {"$h": self.store(value, msg.get("as"))}
         if msg.get("ret") == "none":
             return None
+        if msg.get("ret") == "arrays":
+            return _arrays(value, msg.get("out"))
         return self.enc(value, True, results=msg.get("results"))
 
     def op_get(self, msg: dict):
         value = self._path(self.obj(msg.get("handle")), msg.get("attr") or "")
         if msg.get("ret") == "handle":
             return {"$h": self.store(value, msg.get("as"))}
+        if msg.get("ret") == "arrays":
+            return _arrays(value, msg.get("out"))
         return self.enc(value, msg.get("ret") != "value")
 
     def op_free(self, msg: dict):
