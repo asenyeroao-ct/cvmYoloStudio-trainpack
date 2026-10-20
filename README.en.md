@@ -81,23 +81,23 @@ flowchart LR
 <table>
   <tr>
     <td colspan="2" align="center">
-      <img src="docs/screenshots/annotate.webp" width="100%" alt="Labeling screen" /><br />
+      <img src="docs/screenshots/en/annotate.webp" width="100%" alt="Labeling screen" /><br />
       <sub><b>Labeling</b>: full-screen editor with class and label lists</sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="docs/screenshots/quality.webp" width="100%" alt="Quality check" /><br />
+      <img src="docs/screenshots/en/quality.webp" width="100%" alt="Quality check" /><br />
       <sub><b>Quality check</b>: likely missing, extra and loose boxes, ranked</sub>
     </td>
     <td width="50%" align="center">
-      <img src="docs/screenshots/monitor.webp" width="100%" alt="Training monitor" /><br />
+      <img src="docs/screenshots/en/monitor.webp" width="100%" alt="Training monitor" /><br />
       <sub><b>Training</b>: live mAP / loss curves</sub>
     </td>
   </tr>
   <tr>
     <td colspan="2" align="center">
-      <img src="docs/screenshots/environment.webp" width="100%" alt="Settings → Environment" /><br />
+      <img src="docs/screenshots/en/environment.webp" width="100%" alt="Settings → Environment" /><br />
       <sub><b>Environment</b>: install the training pack and this component in one click</sub>
     </td>
   </tr>
