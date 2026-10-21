@@ -45,6 +45,7 @@ flowchart LR
 | **Keyframe interpolation** | Label two frames and every frame in between gets a box — great for game footage |
 | **Tracking propagation** | Pick objects once and follow them through the next frames; preview before applying |
 | **Text-prompt labeling** | Describe an object in English to find it, no training needed |
+| **Learn from my labels** | Use the images you already labeled as examples to improve AI auto-label right away, or let it learn in the background as you label |
 | **Low-confidence review** | Check the least certain AI results first with `Shift+R` |
 | **Tasks** | Detection, segmentation, pose, oriented boxes |
 
@@ -111,10 +112,10 @@ flowchart LR
 
 | Plan | Includes |
 | --- | --- |
-| **Free** | All labeling, data, training and export features; a free account unlocks advanced training parameters, run comparison, auto-tune and joining collaboration |
+| **Free** | All labeling, data, training and export features, plus advanced training parameters, run comparison, auto-tune and joining collaboration |
 | **Pro** | Create shared projects and use the official collaboration server |
 
-Every regular feature works without signing in.
+A free account and an internet connection are required (you can keep working through a short outage of up to 30 minutes).
 
 ### System requirements
 
